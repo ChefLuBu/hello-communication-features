@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View, Image } from "react-native";
+import { Platform, StyleSheet, Text, View, Image } from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import * as MediaLibrary from "expo-media-library";
 import Button from "./Button";
 import { Audio, Video } from "expo-av";
+import * as Location from "expo-location";
 
 export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -14,9 +15,27 @@ export default function App() {
   const cameraRef = useRef(null);
   const [sound, setSound] = React.useState();
   const [recording, setRecording] = React.useState();
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+
+      let text = "Waiting..";
+      if (errorMsg) {
+        text = errorMsg;
+      } else if (location) {
+        text = JSON.stringify(location);
+      }
+
       MediaLibrary.requestPermissionsAsync();
       const cameraStatus = await Camera.requestCameraPermissionsAsync();
       setHasCameraPermission(cameraStatus.status === "granted");
@@ -50,7 +69,7 @@ export default function App() {
   async function playSound() {
     console.log("Bad Boys For Life");
     const { sound } = await Audio.Sound.createAsync(
-      require("./assets/badboys.mp3")
+      require("./assets/notify.mp3")
     );
     setSound(sound);
 
