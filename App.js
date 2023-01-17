@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, Image } from "react-native";
 import { Camera, CameraType } from "expo-camera";
-import React, { useState, useEffect, useRef } from "react";
+import * as React from "react";
+import { useState, useEffect, useRef } from "react";
 import * as MediaLibrary from "expo-media-library";
 import Button from "./Button";
 import { Audio, Video } from "expo-av";
@@ -11,7 +12,7 @@ export default function App() {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const cameraRef = useRef(null);
-  const [setSound, sound] = React.useState();
+  const [sound, setSound] = React.useState();
   const [recording, setRecording] = React.useState();
 
   useEffect(() => {
