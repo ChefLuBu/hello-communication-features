@@ -1,11 +1,14 @@
 import { Platform, StyleSheet, Text, View, Image } from "react-native";
 import { Camera, CameraType } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import * as MediaLibrary from "expo-media-library";
 import Button from "./Button";
 import { Audio, Video } from "expo-av";
 import * as Location from "expo-location";
+import MapView from "react-native-maps";
+import * as Permissions from 'expo-permissions';
 
 export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -17,6 +20,10 @@ export default function App() {
   const [recording, setRecording] = React.useState();
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  state = {
+    image: null,
+    location: null,
+  };
 
   useEffect(() => {
     (async () => {
@@ -54,6 +61,21 @@ export default function App() {
     }
   };
 
+  // pickImage = async () => {
+  //   const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+  //   if (status === "granted") {
+  //     let result = await ImagePicker.launchImageLibraryAsync({
+  //       mediaTypes: "Images",
+  //     }).catch((error) => console.log(error));
+
+  //     if (!result.cancelled) {
+  //       this.setState({
+  //         image: result,
+  //       });
+  //     }
+  //   }
+  // };
+
   const saveImage = async () => {
     if (image) {
       try {
@@ -62,6 +84,19 @@ export default function App() {
         setImage(null);
       } catch (e) {
         console.log(e);
+      }
+    }
+  };
+
+  getLocation = async () => {
+    const { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status === "granted") {
+      let result = await Location.getCurrentPositionAsync({});
+
+      if (result) {
+        this.setState({
+          location: result,
+        });
       }
     }
   };
@@ -172,6 +207,10 @@ export default function App() {
               }}
             >
               <Button
+                title="Pick an image from the library"
+                onPress={this.pickImage}
+              />
+              <Button
                 title={"Re-take Photo"}
                 icon="retweet"
                 onPress={() => setImage(null)}
@@ -192,6 +231,19 @@ export default function App() {
             title={recording ? "Stop Recording" : "Start Recording"}
             onPress={recording ? stopRecording : startRecording}
           />
+          <Button title="Get my location" onPress={this.getLocation} />
+
+          {this.state.location && (
+            <MapView
+              style={{ width: 300, height: 200 }}
+              region={{
+                latitude: this.state.location.coords.latitude,
+                longitude: this.state.location.coords.longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }}
+            />
+          )}
         </View>
       </View>
     </View>
